@@ -1,0 +1,77 @@
+Actúa como un desarrollador Full-Stack experto en Node.js, Express, SQLite y Tailwind CSS. Crea una aplicación web completa, robusta y lista para producción en RAILWAY (railway.com), optimizada för dispositivos móviles e inspirada en la interfaz de usuario de Instagram.
+
+Sigue estrictamente las siguientes especificaciones técnicas y funcionales para garantizar el éxito del despliegue y un flujo lógico impecable:
+
+---
+
+### 1. ARQUITECTURA Y DESPLIEGUE EXACTO (Railway Standard)
+- Entorno de ejecución: Node.js con servidor Express.
+- Base de datos: SQLite local (utilizando 'better-sqlite3' o 'sqlite3' guardando en 'database.sqlite').
+- Gestor de paquetes: Usar NPM estándar ('npm install', 'package-lock.json'). Queda ESTRICTAMENTE PROHIBIDO usar pnpm, yarn, lerna o dependencias con el protocolo "catalog:", para garantizar 100% de compatibilidad con Nixpacks en Railway.
+- Puerto de red: Escuchar en `process.env.PORT || 3000`.
+- Archivo package.json obligatorio con:
+  - `"scripts": { "start": "node server.js" }`
+  - `"engines": { "node": ">=18.0.0" }`
+
+---
+
+### 2. GESTIÓN Y AJUSTE DE IMÁGENES (ImgBB Direct Upload + Cropper)
+- Carga de imágenes: Subida directa desde el almacenamiento local del teléfono o PC del usuario usando la API de ImgBB (multipart con 'multer').
+- Herramienta de recorte/centrado: Diseña e integra una interfaz con 'Cropper.js' en el frontend para recortar y centrar fotos en formato cuadrado (1:1):
+  - Logo del negocio: Formato circular o cuadrado (utilizado tanto en la interfaz visual como imagen principal de presentación).
+  - Fotos de productos: Formato cuadrado centrado estilo feed.
+- Edición continua: El dueño puede editar, cambiar y ajustar estas imágenes en cualquier momento desde su panel.
+
+---
+
+### 3. INTERFAZ DE CLIENTE (Feed Estilo Instagram Compacto)
+- Diseño: Mobile-first, moderno y limpio (totalmente responsivo).
+- Formato de Menú: Feed de productos en tarjetas tipo publicaciones de Instagram, ligeramente más pequeñas y compactas para visualizar varios ítems cómodamente.
+- Interacciones públicas (Sin login requerido):
+  - Botón de Me Gusta (Corazón) y No Me Gusta con contadores dinámicos.
+  - Caja de Comentarios en cada producto (abierta para cualquier visitante).
+  - Botón Compartir: Copia el enlace directo al producto al portapapeles.
+  - Etiquetas visuales: Badges para "Oferta" y "Agotado / No Disponible".
+
+---
+
+### 4. COMPARTIR EN WHATSAPP Y PREVISUALIZACIÓN OPEN GRAPH (OG TAGS)
+- Etiquetas Meta Open Graph Dinámicas: Las páginas principales y de productos deben inyectar etiquetas `<meta property="og:title" ...>`, `<meta property="og:description" ...>` y `<meta property="og:image" ...>` usando los datos del negocio y el logo configurado por el dueño en el panel de administración. De este modo, al compartir el enlace de la tienda o de un producto por WhatsApp, se generará automáticamente una tarjeta de previsualización atractiva con el logo del negocio y el texto correspondiente.
+
+---
+
+### 5. MÓDULO DE ENTREGA ADAPTATIVO (Delivery vs Retiro en Tienda)
+- Modos de Entrega (Switch en el Checkout):
+  1. 🛵 Delivery: Muestra campos para "Zona/Sector" (con costo dinámico según menú del dueño) y "Dirección exacta + punto de referencia". Suma el costo de envío al total.
+  2. 🏪 Retiro en Tienda / Pickup: Oculta la dirección y establece el costo de delivery en $0.00.
+
+---
+
+### 6. CHECKOUT, VALIDACIÓN Y FLUJO DEL PAGO MÓVIL
+- Notas para la cocina: Campo de texto libre y opcional (ej: "Sin cebolla, extra salsa").
+- Datos obligatorios del cliente al comprar (Paso previo al pago): Nombre, Cédula (con validación Regex estricta contra patrones falsos/secuencias), Teléfono/WhatsApp y Selección de Dirección o Retiro.
+- Visualización de datos de Pago Móvil: Después de rellenar los datos, la app muestra los datos bancarios configurados (Banco, Cédula, Teléfono) para que el cliente realice el pago.
+- Validación del pago realizado: El cliente introduce la referencia del banco (exactamente 6 dígitos) antes de procesar el pedido.
+- Redirección automática a WhatsApp: Tras confirmar, la app procesa la orden y abre de inmediato WhatsApp con un mensaje pre-redactado conteniendo todo el desglose.
+- Automatización: Dispara un Webhook HTTP secundario (JSON) para integraciones tipo MacroDroid que verifiquen la referencia y el monto del pedido automáticamente.
+
+---
+
+### 7. PANEL DE ADMINISTRACIÓN (`/admin` O RUTA `.adm`)
+- Acceso protegido mediante PIN (`process.env.ADMIN_PIN`).
+- Gestión de Configuración y Marca:
+  - Editar Nombre del Negocio, Eslogan, datos de Pago Móvil (Banco, Teléfono, Cédula), dirección física, número de WhatsApp para pedidos.
+  - Subir, recortar y actualizar la Foto del Logo (la cual alimentará tanto la interfaz como las tarjetas Open Graph para compartir en redes).
+  - Interruptor de Horario/Estado (Abierto / Cerrado).
+- Gestión de Menú: Agregar, editar, ajustar foto, precios (normal/oferta), marcar como agotado.
+- Gestión de Delivery/Pickup: Activar/desactivar Retiro y configurar la lista de zonas con sus precios.
+
+---
+
+### 8. ESTRUCTURA DEL PROYECTO
+- `server.js` (Rutas Express, API Rest, inyección de metadatos Open Graph, Webhook de verificación, proxy ImgBB).
+- `database.js` (Conexión SQLite y esquemas: config, products, zones, comments, likes, orders).
+- `public/` (Frontend en HTML/JS/Tailwind CSS con Cropper.js integrado).
+- `.env.example` (Variables necesarias: `PORT`, `ADMIN_PIN`, `MACRODROID_WEBHOOK_TOKEN`, `IMGBB_API_KEY`).
+
+Genera todo el código funcional, limpio y libre de errores sintácticos, listo para producción en Railway tras vincular con GitHub.
