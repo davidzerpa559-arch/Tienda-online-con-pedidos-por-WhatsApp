@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="Menú Local">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f6e9d7"/>
+      <stop offset="1" stop-color="#e0b68c"/>
+    </linearGradient>
+    <radialGradient id="plate">
+      <stop offset="0" stop-color="#fffdf8"/>
+      <stop offset="0.78" stop-color="#fffaf0"/>
+      <stop offset="0.8" stop-color="#d4c0a4"/>
+      <stop offset="0.86" stop-color="#fffaf0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="925" cy="315" r="235" fill="url(#plate)"/>
+  <circle cx="925" cy="315" r="125" fill="#d88b48"/>
+  <path d="M847 305c40-65 114-67 156-10-28 65-94 92-157 47z" fill="#668453"/>
+  <circle cx="943" cy="279" r="20" fill="#f8e2ac"/>
+  <path d="M868 349c40-35 92-39 136-8" fill="none" stroke="#f0d090" stroke-width="13" stroke-linecap="round"/>
+  <text x="96" y="276" fill="#263126" font-family="Georgia,serif" font-size="84" font-weight="700">Menú Local</text>
+  <text x="100" y="348" fill="#5b554b" font-family="Arial,sans-serif" font-size="28" letter-spacing="3">COMIDA HECHA CERCA, COMPARTIDA EN CASA</text>
+  <path d="M101 395h340" stroke="#a56b3c" stroke-width="5" stroke-linecap="round"/>
+</svg>

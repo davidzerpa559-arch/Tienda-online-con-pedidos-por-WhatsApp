@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900" role="img" aria-label="Plato de comida">
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1">
+      <stop stop-color="#e7d5b9"/>
+      <stop offset="1" stop-color="#d5b994"/>
+    </linearGradient>
+    <radialGradient id="plate">
+      <stop stop-color="#fffdf7"/>
+      <stop offset=".76" stop-color="#fffaf0"/>
+      <stop offset=".79" stop-color="#cfb995"/>
+      <stop offset=".85" stop-color="#fdf7eb"/>
+    </radialGradient>
+  </defs>
+  <rect width="900" height="900" fill="url(#bg)"/>
+  <circle cx="450" cy="430" r="300" fill="url(#plate)"/>
+  <circle cx="450" cy="420" r="166" fill="#ca8049"/>
+  <path d="M346 399c39-72 125-92 191-35-29 83-111 122-192 77z" fill="#658153"/>
+  <path d="M370 470c52-36 115-41 167-7" fill="none" stroke="#f3d996" stroke-width="17" stroke-linecap="round"/>
+  <circle cx="478" cy="351" r="27" fill="#f7e2ae"/>
+  <circle cx="415" cy="447" r="19" fill="#a64f35"/>
+  <text x="450" y="805" text-anchor="middle" fill="#524938" font-family="Georgia,serif" font-size="35">Foto del plato próximamente</text>
+</svg>

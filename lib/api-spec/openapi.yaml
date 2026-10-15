@@ -3,13 +3,19 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: API for Menú Local storefront, checkout, and administration
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: storefront
+    description: Public shop and product interactions
+  - name: checkout
+    description: Customer orders
+  - name: admin
+    description: PIN-protected shop administration
 paths:
   /healthz:
     get:
@@ -24,6 +30,383 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /storefront:
+    get:
+      operationId: getStorefront
+      tags: [storefront]
+      summary: Get public shop information and available products
+      responses:
+        "200":
+          description: Shop profile, available products, and delivery zones
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StorefrontResponse"
+  /products/{slug}:
+    get:
+      operationId: getProduct
+      tags: [storefront]
+      summary: Get a product by public slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product and current reaction counts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductDetail"
+        "404":
+          description: Product not found
+  /products/{slug}/reactions:
+    post:
+      operationId: reactToProduct
+      tags: [storefront]
+      summary: Set or clear the current visitor's reaction
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReactionInput"
+      responses:
+        "200":
+          description: Updated reaction counts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReactionResult"
+        "404":
+          description: Product not found
+  /products/{slug}/comments:
+    get:
+      operationId: listProductComments
+      tags: [storefront]
+      summary: List comments on a product
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProductComment"
+    post:
+      operationId: createProductComment
+      tags: [storefront]
+      summary: Add a public comment to a product
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentInput"
+      responses:
+        "201":
+          description: Comment created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductComment"
+        "404":
+          description: Product not found
+  /orders:
+    post:
+      operationId: createOrder
+      tags: [checkout]
+      summary: Validate and create an order for Mobile Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderInput"
+      responses:
+        "201":
+          description: Order saved; payment verification is pending
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderCreated"
+        "400":
+          description: Invalid customer, delivery, product, or payment-reference data
+  /admin/session:
+    get:
+      operationId: getAdminSession
+      tags: [admin]
+      summary: Check whether the current browser has an admin session
+      responses:
+        "200":
+          description: Session state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSession"
+    post:
+      operationId: createAdminSession
+      tags: [admin]
+      summary: Sign in using the configured administration PIN
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLoginInput"
+      responses:
+        "200":
+          description: Admin session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSession"
+        "401":
+          description: Incorrect PIN
+    delete:
+      operationId: deleteAdminSession
+      tags: [admin]
+      summary: Sign out
+      responses:
+        "200":
+          description: Session ended
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSession"
+  /admin/overview:
+    get:
+      operationId: getAdminOverview
+      tags: [admin]
+      summary: Get shop settings, products, delivery zones, orders, and dashboard totals
+      responses:
+        "200":
+          description: Admin dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOverview"
+        "401":
+          description: Admin session required
+  /admin/settings:
+    patch:
+      operationId: updateStoreSettings
+      tags: [admin]
+      summary: Update store identity, mobile payment details, and fulfilment options
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StoreSettingsInput"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoreSettings"
+        "401":
+          description: Admin session required
+  /admin/upload:
+    post:
+      operationId: uploadStoreImage
+      tags: [admin]
+      summary: Crop and upload a store or product image to ImgBB
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/UploadInput"
+      responses:
+        "201":
+          description: Uploaded image URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadResult"
+        "401":
+          description: Admin session required
+  /admin/products:
+    post:
+      operationId: createProduct
+      tags: [admin]
+      summary: Add a menu product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductInput"
+      responses:
+        "201":
+          description: Product created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "401":
+          description: Admin session required
+  /admin/products/{id}:
+    patch:
+      operationId: updateProduct
+      tags: [admin]
+      summary: Edit a menu product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductUpdate"
+      responses:
+        "200":
+          description: Updated product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "401":
+          description: Admin session required
+        "404":
+          description: Product not found
+    delete:
+      operationId: deleteProduct
+      tags: [admin]
+      summary: Remove a menu product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Product deleted
+        "401":
+          description: Admin session required
+        "404":
+          description: Product not found
+  /admin/zones:
+    post:
+      operationId: createDeliveryZone
+      tags: [admin]
+      summary: Add a delivery zone and fee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeliveryZoneInput"
+      responses:
+        "201":
+          description: Delivery zone created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeliveryZone"
+        "401":
+          description: Admin session required
+  /admin/zones/{id}:
+    patch:
+      operationId: updateDeliveryZone
+      tags: [admin]
+      summary: Edit a delivery zone
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeliveryZoneInput"
+      responses:
+        "200":
+          description: Updated delivery zone
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeliveryZone"
+        "401":
+          description: Admin session required
+        "404":
+          description: Delivery zone not found
+    delete:
+      operationId: deleteDeliveryZone
+      tags: [admin]
+      summary: Remove a delivery zone
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Delivery zone deleted
+        "401":
+          description: Admin session required
+        "404":
+          description: Delivery zone not found
+  /admin/orders/{id}:
+    patch:
+      operationId: updateOrderStatus
+      tags: [admin]
+      summary: Update the status of an order
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderStatusInput"
+      responses:
+        "200":
+          description: Updated order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOrder"
+        "401":
+          description: Admin session required
+        "404":
+          description: Order not found
 components:
   schemas:
     HealthStatus:
@@ -33,4 +416,246 @@ components:
           type: string
       required:
         - status
+    StoreSettings:
+      type: object
+      required: [storeName, tagline, logoUrl, whatsappNumber, physicalAddress, bankName, bankId, bankPhone, isOpen, pickupEnabled, webhookUrl]
+      properties:
+        storeName: { type: string }
+        tagline: { type: string }
+        logoUrl: { type: ["string", "null"] }
+        whatsappNumber: { type: string }
+        physicalAddress: { type: string }
+        bankName: { type: string }
+        bankId: { type: string }
+        bankPhone: { type: string }
+        isOpen: { type: boolean }
+        pickupEnabled: { type: boolean }
+        webhookUrl: { type: ["string", "null"] }
+    PublicStoreSettings:
+      type: object
+      required: [storeName, tagline, logoUrl, whatsappNumber, physicalAddress, bankName, bankId, bankPhone, isOpen, pickupEnabled]
+      properties:
+        storeName: { type: string }
+        tagline: { type: string }
+        logoUrl: { type: ["string", "null"] }
+        whatsappNumber: { type: string }
+        physicalAddress: { type: string }
+        bankName: { type: string }
+        bankId: { type: string }
+        bankPhone: { type: string }
+        isOpen: { type: boolean }
+        pickupEnabled: { type: boolean }
+    Product:
+      type: object
+      required: [id, slug, name, description, category, imageUrl, price, offerPrice, isAvailable, likeCount, dislikeCount]
+      properties:
+        id: { type: integer }
+        slug: { type: string }
+        name: { type: string }
+        description: { type: string }
+        category: { type: string }
+        imageUrl: { type: ["string", "null"] }
+        price: { type: number, minimum: 0 }
+        offerPrice: { type: ["number", "null"], minimum: 0 }
+        isAvailable: { type: boolean }
+        likeCount: { type: integer, minimum: 0 }
+        dislikeCount: { type: integer, minimum: 0 }
+    ProductDetail:
+      type: object
+      required: [product, comments]
+      properties:
+        product: { $ref: "#/components/schemas/Product" }
+        comments:
+          type: array
+          items: { $ref: "#/components/schemas/ProductComment" }
+    StorefrontResponse:
+      type: object
+      required: [store, products, zones]
+      properties:
+        store: { $ref: "#/components/schemas/PublicStoreSettings" }
+        products:
+          type: array
+          items: { $ref: "#/components/schemas/Product" }
+        zones:
+          type: array
+          items: { $ref: "#/components/schemas/DeliveryZone" }
+    DeliveryZone:
+      type: object
+      required: [id, name, deliveryFee, isActive]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        deliveryFee: { type: number, minimum: 0 }
+        isActive: { type: boolean }
+    ProductComment:
+      type: object
+      required: [id, productId, customerName, content, createdAt]
+      properties:
+        id: { type: integer }
+        productId: { type: integer }
+        customerName: { type: string }
+        content: { type: string }
+        createdAt: { type: string, format: date-time }
+    CommentInput:
+      type: object
+      required: [customerName, content]
+      properties:
+        customerName: { type: string, minLength: 2, maxLength: 60 }
+        content: { type: string, minLength: 1, maxLength: 500 }
+    ReactionInput:
+      type: object
+      required: [reaction]
+      properties:
+        reaction: { type: string, enum: [like, dislike, clear] }
+    ReactionResult:
+      type: object
+      required: [likeCount, dislikeCount, currentReaction]
+      properties:
+        likeCount: { type: integer, minimum: 0 }
+        dislikeCount: { type: integer, minimum: 0 }
+        currentReaction: { type: ["string", "null"], enum: [like, dislike, null] }
+    ProductInput:
+      type: object
+      required: [name, description, category, imageUrl, price, offerPrice, isAvailable]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100 }
+        description: { type: string, maxLength: 1000 }
+        category: { type: string, maxLength: 60 }
+        imageUrl: { type: ["string", "null"], format: uri }
+        price: { type: number, exclusiveMinimum: 0 }
+        offerPrice: { type: ["number", "null"], exclusiveMinimum: 0 }
+        isAvailable: { type: boolean }
+    ProductUpdate:
+      allOf:
+        - $ref: "#/components/schemas/ProductInput"
+    DeliveryZoneInput:
+      type: object
+      required: [name, deliveryFee, isActive]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 80 }
+        deliveryFee: { type: number, minimum: 0 }
+        isActive: { type: boolean }
+    StoreSettingsInput:
+      type: object
+      required: [storeName, tagline, logoUrl, whatsappNumber, physicalAddress, bankName, bankId, bankPhone, isOpen, pickupEnabled, webhookUrl]
+      properties:
+        storeName: { type: string, minLength: 2, maxLength: 100 }
+        tagline: { type: string, maxLength: 180 }
+        logoUrl: { type: ["string", "null"], format: uri }
+        whatsappNumber: { type: string, minLength: 7, maxLength: 20 }
+        physicalAddress: { type: string, maxLength: 300 }
+        bankName: { type: string, maxLength: 100 }
+        bankId: { type: string, maxLength: 20 }
+        bankPhone: { type: string, maxLength: 20 }
+        isOpen: { type: boolean }
+        pickupEnabled: { type: boolean }
+        webhookUrl: { type: ["string", "null"], format: uri }
+    UploadInput:
+      type: object
+      required: [image]
+      properties:
+        image: { type: string, format: binary }
+    UploadResult:
+      type: object
+      required: [url]
+      properties:
+        url: { type: string, format: uri }
+    OrderItemInput:
+      type: object
+      required: [productId, quantity]
+      properties:
+        productId: { type: integer, minimum: 1 }
+        quantity: { type: integer, minimum: 1, maximum: 50 }
+    OrderInput:
+      type: object
+      required: [customerName, cedula, phone, fulfillment, zoneId, address, referencePoint, notes, paymentReference, items]
+      properties:
+        customerName: { type: string, minLength: 2, maxLength: 100 }
+        cedula: { type: string, minLength: 7, maxLength: 12, pattern: "^[VEJPG]-?[0-9]{6,9}$" }
+        phone: { type: string, minLength: 7, maxLength: 20 }
+        fulfillment: { type: string, enum: [delivery, pickup] }
+        zoneId: { type: ["integer", "null"], minimum: 1 }
+        address: { type: string, maxLength: 300 }
+        referencePoint: { type: string, maxLength: 200 }
+        notes: { type: string, maxLength: 500 }
+        paymentReference: { type: string, pattern: "^[0-9]{6}$" }
+        items:
+          type: array
+          minItems: 1
+          maxItems: 30
+          items: { $ref: "#/components/schemas/OrderItemInput" }
+    OrderCreated:
+      type: object
+      required: [id, total, status, whatsappUrl, webhookStatus]
+      properties:
+        id: { type: integer }
+        total: { type: number, minimum: 0 }
+        status: { type: string, enum: [pending_verification] }
+        whatsappUrl: { type: string, format: uri }
+        webhookStatus: { type: string, enum: [sent, not_configured, failed] }
+    AdminLoginInput:
+      type: object
+      required: [pin]
+      properties:
+        pin: { type: string, minLength: 4, maxLength: 12 }
+    AdminSession:
+      type: object
+      required: [authenticated]
+      properties:
+        authenticated: { type: boolean }
+    AdminOverview:
+      type: object
+      required: [store, products, zones, orders, metrics]
+      properties:
+        store: { $ref: "#/components/schemas/StoreSettings" }
+        products:
+          type: array
+          items: { $ref: "#/components/schemas/Product" }
+        zones:
+          type: array
+          items: { $ref: "#/components/schemas/DeliveryZone" }
+        orders:
+          type: array
+          items: { $ref: "#/components/schemas/AdminOrder" }
+        metrics: { $ref: "#/components/schemas/AdminMetrics" }
+    AdminMetrics:
+      type: object
+      required: [ordersToday, pendingOrders, salesToday]
+      properties:
+        ordersToday: { type: integer, minimum: 0 }
+        pendingOrders: { type: integer, minimum: 0 }
+        salesToday: { type: number, minimum: 0 }
+    AdminOrder:
+      type: object
+      required: [id, customerName, cedula, phone, fulfillment, zoneName, address, referencePoint, notes, paymentReference, items, total, status, createdAt]
+      properties:
+        id: { type: integer }
+        customerName: { type: string }
+        cedula: { type: string }
+        phone: { type: string }
+        fulfillment: { type: string, enum: [delivery, pickup] }
+        zoneName: { type: ["string", "null"] }
+        address: { type: string }
+        referencePoint: { type: string }
+        notes: { type: string }
+        paymentReference: { type: string }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/OrderItem"}
+        total: { type: number, minimum: 0 }
+        status: { type: string, enum: [pending_verification, confirmed, preparing, ready, delivered, rejected] }
+        createdAt: { type: string, format: date-time }
+    OrderItem:
+      type: object
+      required: [productId, name, quantity, unitPrice]
+      properties:
+        productId: { type: integer }
+        name: { type: string }
+        quantity: { type: integer, minimum: 1 }
+        unitPrice: { type: number, minimum: 0 }
+    OrderStatusInput:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [pending_verification, confirmed, preparing, ready, delivered, rejected] }
 

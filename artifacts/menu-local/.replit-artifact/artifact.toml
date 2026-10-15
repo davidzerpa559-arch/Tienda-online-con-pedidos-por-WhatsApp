@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Menú Local"
+description = "Una tienda móvil para que negocios de comida publiquen su menú, administren precios y entregas, reciban pedidos con Pago Móvil y confirmen por WhatsApp."
+version = "1.0.0"
+id = "artifacts/menu-local"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19952
+
+[services.development]
+run = "pnpm --filter @workspace/menu-local run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/menu-local", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/menu-local/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19952"
+BASE_PATH = "/"
